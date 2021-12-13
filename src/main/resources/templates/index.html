@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8"/>
+        <title>Hello Thymeleaf</title>
+    </head>
+
+    <body>
+        <select id="selectType" onchange="searchName()">
+            <option value="">-- 종류선택 --</option>
+            <option th:each="val : ${itemType}" th:value="${val}" th:utext="${val}"></option>
+        </select>
+
+        <select id="selectName">
+            <option value="">-- 이름선택 --</option>
+        </select>
+
+        <span><button type="button" id="btn" name="btn">찾기</button></span>
+
+        <script type="text/javascript" src="webjars/jquery/3.6.0/jquery.min.js"></script>
+        <script type="text/javascript">
+            function searchName(){
+                var select=$("#selectName");
+                var type=$("#selectType option:selected").val();
+                if(type.trim()!=""){
+                    $.getJSON("/market/"+type,function (data){
+                        $(select).empty();
+                        $(select).append("<option value=''>-- 이름선택 --</option>");
+
+                        $(data).each(function (i){
+                            $(select).append("<option value='"+data[i]+"'>"+data[i]+"</option>");
+                        })
+                    }).fail(function(jqXHR, textStatus, errorThrown){
+                        var errorRes = JSON.parse(jqXHR.responseText);
+                        if(errorRes.message!=null){
+                            alert("error : " +errorRes.message);
+                        }
+                    })
+                }
+            }
+
+            $("#btn").click(function(){
+                var type=$("#selectType option:selected").val();
+                if(type.trim()==""){
+                    alert("Must choose 과일 or 채소");
+                    return;
+                }
+
+                // var name=$("#name").val();
+                var name=$("#selectName option:selected").val();
+                if(name.trim()==""){
+                    alert("Must choose 이름");
+                    return;
+                }
+
+                $.getJSON("/market/"+type+"/"+name,function(data){
+                    alert(data.price+"원");
+                }).fail(function(jqXHR, textStatus, errorThrown){
+                    var errorRes = JSON.parse(jqXHR.responseText);
+                    if(errorRes.message!=null){
+                        alert("error : " +errorRes.message);
+                    }
+
+                })
+            })
+        </script>
+    </body>
+</html>
